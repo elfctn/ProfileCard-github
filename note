@@ -1,0 +1,84 @@
+1. HTML Yapısı 
+Uygulamanın arayüzü için bir HTML dosyasına ihtiyacınız var. Bu HTML dosyasında aşağıdaki elementlerin bulunması gerekir:
+
+id="form" olan bir form: Kullanıcı adını girmek için.
+id="search" olan bir input: Kullanıcı adını yazmak için.
+id="main" olan bir div: Kullanıcının bilgilerinin ve repolarının gösterileceği ana alan.
+
+
+2. Kütüphane Yüklemesi
+Bu kod Axios kütüphanesini kullanır. Bu JavaScript dosyasını HTML dosyanıza eklemeden önce,
+ Axios'u sayfanıza dahil etmeniz gerekir. Genellikle bir CDN'den (Content Delivery Network) eklenir:
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+
+3. DOM Elementlerinin Seçilmesi
+Kodun başında, HTML'deki belirli elementlere referanslar alınır:
+const API_URL = 'https://api.github.com/users/': GitHub API'sinin temel URL'si tanımlanır.
+const form = document.getElementById('form'): Arama formu seçilir.
+const search = document.getElementById('search'): Arama input alanı seçilir.
+const main = document.getElementById('main'): Kullanıcı kartının gösterileceği ana kapsayıcı seçilir.
+
+
+
+4. getUser(username) Fonksiyonu
+Bu fonksiyon, belirli bir kullanıcı adına göre GitHub API'sinden kullanıcı bilgilerini çeker:
+async function getUser(username): Fonksiyon asenkrondur, yani ağ istekleri yapabilir ve sonucunu bekleyebilir.
+try...catch bloğu kullanılır:
+try bloğu: axios(API_URL + username) ile GitHub API'sine GET isteği gönderir. Yanıt başarılı olursa, gelen veriyi (data) alır.
+createUserCard(data): Gelen kullanıcı verisiyle bir kullanıcı kartı oluşturur ve ana alana ekler.
+getRepos(username): Kullanıcının repolarını çekmek için başka bir fonksiyonu çağırır.
+catch bloğu: İstek sırasında bir hata oluşursa (örneğin kullanıcı bulunamazsa),
+ createErrorCard("Aradığınız Kullanıcı Bulunamadı :(") fonksiyonunu çağırarak bir hata mesajı gösterir.
+
+
+
+5. form.addEventListener('submit', ...)
+Bu kısım, arama formu gönderildiğinde çalışacak olay dinleyicisini ayarlar:
+form.addEventListener('submit', (e) => { ... }): Form gönderildiğinde bu fonksiyon tetiklenir.
+e.preventDefault(): Formun varsayılan gönderim davranışını (sayfanın yenilenmesi) engeller.
+const user = search.value: Arama input'undaki değeri (kullanıcı adını) alır.
+if(user): Eğer kullanıcı adı boş değilse:
+getUser(user): Bu kullanıcı adıyla kullanıcı bilgilerini çekmek için getUser fonksiyonunu çağırır.
+search.value = '': Arama input'unu temizler.
+
+
+
+6. createUserCard(user) Fonksiyonu
+Bu fonksiyon, çekilen kullanıcı verileriyle bir HTML kartı oluşturur ve main elementinin içine yerleştirir:
+Kullanıcının adını, biyografisini, takipçi, takip edilen ve repo sayılarını içeren bir HTML dizesi oluşturur.
+user.name || user.login: Kullanıcının adı yoksa login adını kullanır.
+user.bio ? ... : "": Biyografi varsa gösterir, yoksa boş bırakır.
+main.innerHTML = cardHTML: Oluşturulan HTML'yi main div'inin içine ekler, böylece eski içeriği (varsa) değiştirir.
+
+
+
+7. createErrorCard(msg) Fonksiyonu
+Bu fonksiyon, bir hata mesajını göstermek için basit bir HTML kartı oluşturur:
+main.innerHTML = cardErrorHTML: Oluşturulan hata HTML'sini main div'inin içine ekler.
+
+8. getRepos(username) Fonksiyonu
+Bu fonksiyon, belirli bir kullanıcının GitHub repolarını çeker:
+async function getRepos(username): Fonksiyon asenkrondur.
+try...catch bloğu kullanılır:
+try bloğu: axios(API_URL + username + '/repos') ile kullanıcının repolarını çeken API isteğini gönderir.
+addReposToCard(data): Gelen repo verilerini kullanıcı kartına eklemek için başka bir fonksiyonu çağırır.
+catch bloğu: Hata durumunda createErrorCard("repoları çekerken hata oluştu :(") mesajını gösterir.
+
+
+9. addReposToCard(repos) Fonksiyonu
+Bu fonksiyon, çekilen repoları kullanıcı kartındaki repos div'inin içine ekler:
+const reposEl = document.getElementById("repos"): Repo linklerinin ekleneceği repos div'ini seçer.
+repos.slice(0,3).forEach((repo)=> { ... }): Gelen repolardan ilk 3 tanesini alır ve her biri için döngü oluşturur.
+Her repo için bir <a> (link) elementi oluşturur:
+reposLink.href = repo.html_url: Linkin URL'sini repo'nun GitHub sayfasına ayarlar.
+reposLink.target = "_blank": Linkin yeni sekmede açılmasını sağlar.
+reposLink.innerHTML = ...: Linkin içine repo adını ve bir ikon ekler.
+reposEl.appendChild(reposLink): Oluşturulan linki reposEl div'ine ekler.
+
+
+Özetle, bu JavaScript dosyası bir kullanıcı adı girildiğinde GitHub API'sini kullanarak 
+o kullanıcının bilgilerini ve ilk 3 reposunu çeken ve bunları dinamik olarak web sayfasında gösteren bir yapıya sahiptir. 
+Eğer kullanıcı bulunamazsa veya repolar çekilirken bir hata oluşursa, ilgili hata mesajlarını görüntüler.
+
